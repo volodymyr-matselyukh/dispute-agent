@@ -1,0 +1,18 @@
+{
+  "name": "compliance-validator",
+  "version": "0.0.1",
+  "description": "The AI Compliance Validator is an intelligent agent designed to ensure ethical and legal integrity in task and contract descriptions. It automatically scans and validates content to detect and flag any references to terrorism, money laundering, abusive or cruel activities\u2014including harm toward animals\u2014or any other unethical or illegal elements. By leveraging advanced natural language processing and compliance checks, this AI agent helps maintain a safe, responsible, and law-abiding environment for all users.",
+  "category": "agent",
+  "tags": [],
+  "details": {
+    "agent": {
+      "defaults": {
+        "model": "llama-v3p1-70b-instruct",
+        "model_provider": "fireworks",
+        "model_temperature": 1.0,
+        "model_max_tokens": 16384
+      }
+    }
+  },
+  "show_entry": true
+}
