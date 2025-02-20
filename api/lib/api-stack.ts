@@ -18,17 +18,22 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const commonLambdaOptions = {
+      handler: "handler",
+      environment: {
+        authorizationToken: process.env.authorization ?? "",
+      },
+      timeout: cdk.Duration.seconds(90),
+    };
+
     const resolveDisputeLambda = new NodejsFunction(
       this,
       "ResolveDisputeLambda",
       {
         runtime: Runtime.NODEJS_LATEST,
         entry: path.join(__dirname, `/../lambdas/dispute-resolver.ts`),
-        handler: "handler",
-        environment: {
-          authorizationToken: process.env.authorization ?? "",
-        },
-      }
+        ...commonLambdaOptions
+      },
     );
 
     const clarifyDisputeLambda = new NodejsFunction(
@@ -37,10 +42,7 @@ export class ApiStack extends cdk.Stack {
       {
         runtime: Runtime.NODEJS_LATEST,
         entry: path.join(__dirname, `/../lambdas/clarify-dispute.ts`),
-        handler: "handler",
-        environment: {
-          authorizationToken: process.env.authorization ?? "",
-        },
+        ...commonLambdaOptions
       }
     );
 
@@ -50,11 +52,7 @@ export class ApiStack extends cdk.Stack {
       {
         runtime: Runtime.NODEJS_LATEST,
         entry: path.join(__dirname, `/../lambdas/compliance-validator.ts`),
-        handler: "handler",
-        environment: {
-          authorizationToken: process.env.authorization ?? "",
-        },
-        timeout: cdk.Duration.seconds(30),
+        ...commonLambdaOptions
       }
     );
 
