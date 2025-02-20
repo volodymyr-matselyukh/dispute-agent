@@ -37,7 +37,7 @@ export const handler: Handler = async (event: APIGatewayEvent) => {
     };
   }
 
-  return resolveDispute(
+  return await resolveDispute(
     body.taskName,
     body.taskDescription,
     body.ownerComment,
@@ -67,7 +67,7 @@ async function resolveDispute(
       if (extractedData) {
         return {
           statusCode: 200,
-          body: { ...extractedData, threadId },
+          body: JSON.stringify({ ...extractedData, threadId }),
         };
       }
     }

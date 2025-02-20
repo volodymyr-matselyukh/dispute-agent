@@ -30,7 +30,7 @@ export const handler: Handler = async (event: APIGatewayEvent) => {
     };
   }
 
-  return validateTask(body.taskName, body.taskDescription);
+  return await validateTask(body.taskName, body.taskDescription);
 };
 
 async function validateTask(taskName: string, taskDescription: string) {

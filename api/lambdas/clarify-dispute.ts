@@ -29,7 +29,7 @@ export const handler: Handler = async (event: APIGatewayEvent) => {
     };
   }
 
-  return clarifyDisputeResolution(body.message, body.threadId);
+  return await clarifyDisputeResolution(body.message, body.threadId);
 };
 
 async function clarifyDisputeResolution(message: string, threadId: string) {
@@ -47,7 +47,7 @@ async function clarifyDisputeResolution(message: string, threadId: string) {
     if (lastBotMessage) {
       return {
         statusCode: 200,
-        body: { threadId: threadIdFromResponse, response: lastBotMessage },
+        body: JSON.stringify({ threadId: threadIdFromResponse, response: lastBotMessage }),
       };
     }
 
