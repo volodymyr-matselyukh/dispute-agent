@@ -21,6 +21,8 @@ def run(env: Environment):
 
               Other Unethical Behavior: Scan for mentions of illegal, immoral, or unethical activities that violate compliance standards.
 
+              Bad words: Using bad words in not professional and is forbidden by the policy. If you recognize bad words in task description put the violationLikelihood higher than 30.
+
               Risk Assessment:
 
               Provide a confidence score indicating the likelihood of a violation.
@@ -35,7 +37,7 @@ def run(env: Environment):
               {"violationLikelihood": 50, "problem": "Harm to animals detected"}
 
               Example 3:
-              {"violationLikelihood": 0, "problem": null}
+              {"violationLikelihood": 0, "problem": "none"}
               """}
 
     result = env.completion([prompt] + env.list_messages())
