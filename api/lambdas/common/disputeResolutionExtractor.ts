@@ -4,8 +4,6 @@ export const extractDisputeResolution = (text: string) => {
   const match = regex.exec(text);
 
   if (match) {
-    console.log("match", match);
-
     const textWithoutResolution = text.replace(match[0], "");
 
     return {
