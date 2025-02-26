@@ -34,6 +34,36 @@ export const getLastThreadMessageFromBot = async (threadId: string) => {
   return "";
 };
 
+export const listMessages = async (threadId: string) => {
+  const messagesResponse = await axios.get(
+    `https://api.near.ai/v1/threads/${threadId}/messages`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.authorizationToken}`,
+      },
+    }
+  );
+
+  const messages: [
+    {
+      role: string;
+      created_at: number;
+      content: [{ text: { value: string } }];
+    }
+  ] = messagesResponse?.data?.data ?? [];
+
+  messages.sort(
+    (message1: { created_at: number }, message2: { created_at: number }) =>
+      message2.created_at - message1.created_at
+  );
+
+  return messages.map((message) => ({
+    text: message.content[0].text.value,
+    role: message.role,
+    createdAt: message.created_at,
+  }));
+};
+
 export const submitMessageToThread = async (
   message: string,
   agentId: string,

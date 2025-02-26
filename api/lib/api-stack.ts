@@ -1,15 +1,11 @@
 import * as cdk from "aws-cdk-lib";
-import {
-  CorsHttpMethod,
-  HttpApi,
-  HttpMethod,
-} from "aws-cdk-lib/aws-apigatewayv2";
-import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import { CorsHttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import path = require("path");
 
+import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -32,8 +28,8 @@ export class ApiStack extends cdk.Stack {
       {
         runtime: Runtime.NODEJS_LATEST,
         entry: path.join(__dirname, `/../lambdas/dispute-resolver.ts`),
-        ...commonLambdaOptions
-      },
+        ...commonLambdaOptions,
+      }
     );
 
     const clarifyDisputeLambda = new NodejsFunction(
@@ -42,7 +38,7 @@ export class ApiStack extends cdk.Stack {
       {
         runtime: Runtime.NODEJS_LATEST,
         entry: path.join(__dirname, `/../lambdas/clarify-dispute.ts`),
-        ...commonLambdaOptions
+        ...commonLambdaOptions,
       }
     );
 
@@ -52,49 +48,53 @@ export class ApiStack extends cdk.Stack {
       {
         runtime: Runtime.NODEJS_LATEST,
         entry: path.join(__dirname, `/../lambdas/compliance-validator.ts`),
-        ...commonLambdaOptions
+        ...commonLambdaOptions,
       }
     );
 
-    const httpApi = new HttpApi(this, "NescrowAgentsApi", {
-      apiName: "Nescrow Agents Api",
-      corsPreflight: {
-        allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.POST],
-        allowOrigins: ["*"],
-      },
+    const getMessagesLambda = new NodejsFunction(this, "GetMessagesLambda", {
+      runtime: Runtime.NODEJS_LATEST,
+      entry: path.join(__dirname, `/../lambdas/getMessages.ts`),
+      ...commonLambdaOptions,
     });
 
-    const resolveDisputeLambdaIntegration = new HttpLambdaIntegration(
-      "ResolveDisputeIntegration",
+    const httpApi = new RestApi(this, "NescrowAgentsApi", {
+      restApiName: "Nescrow Agents Api",
+    });
+
+    httpApi.root.addCorsPreflight({
+      allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.POST],
+      allowOrigins: ["*"],
+    });
+
+    const resolveDisputeLambdaIntegration = new LambdaIntegration(
       resolveDisputeLambda
     );
 
-    const clarifyDisputeLambdaIntegration = new HttpLambdaIntegration(
-      "ClarifyDisputeIntegration",
+    const resolveDisputeResource = httpApi.root.addResource("resolve-dispute");
+    resolveDisputeResource.addMethod("POST", resolveDisputeLambdaIntegration);
+
+    const clarifyDisputeLambdaIntegration = new LambdaIntegration(
       clarifyDisputeLambda
     );
 
-    const complianceIntegration = new HttpLambdaIntegration(
-      "ComplianceIntegration",
+    const clarifyDisputeResource = httpApi.root.addResource("clarify-dispute");
+    clarifyDisputeResource.addMethod("POST", clarifyDisputeLambdaIntegration);
+
+    const complianceIntegration = new LambdaIntegration(
       validateComlianceLambda
     );
 
-    httpApi.addRoutes({
-      path: "/resolve-dispute",
-      methods: [HttpMethod.POST],
-      integration: resolveDisputeLambdaIntegration,
-    });
+    const validateComplianceResource = httpApi.root.addResource(
+      "validate-compliance"
+    );
+    validateComplianceResource.addMethod("POST", complianceIntegration);
 
-    httpApi.addRoutes({
-      path: "/clarify-dispute",
-      methods: [HttpMethod.POST],
-      integration: clarifyDisputeLambdaIntegration,
-    });
+    const getMessagesIntegration = new LambdaIntegration(getMessagesLambda);
 
-    httpApi.addRoutes({
-      path: "/validate-compliance",
-      methods: [HttpMethod.POST],
-      integration: complianceIntegration,
-    });
+    const listMessagesResource = httpApi.root.addResource("messages");
+    const threadIdResource = listMessagesResource.addResource("{threadId}");
+
+    threadIdResource.addMethod("GET", getMessagesIntegration);
   }
 }
