@@ -15,11 +15,13 @@ export const getLastThreadMessageFromBot = async (threadId: string) => {
       role: string;
       created_at: number;
       content: [{ text: { value: string } }];
+      attachments: [];
     }
   ] = messagesResponse?.data?.data ?? [];
 
   const assistantMessages = messages.filter(
-    (message: { role: string }) => message.role === "assistant"
+    (message: { role: string; attachments: [] }) =>
+      message.role === "assistant" && message.attachments == null
   );
 
   assistantMessages.sort(

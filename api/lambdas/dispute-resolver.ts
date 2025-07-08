@@ -1,11 +1,7 @@
 import { APIGatewayEvent, Handler } from "aws-lambda";
 
 import * as dotenv from "dotenv";
-import { extractDisputeResolution } from "./common/disputeResolutionExtractor";
-import {
-  getLastThreadMessageFromBot,
-  submitMessageToThread,
-} from "./common/nearAiClient";
+import { submitMessageToThread } from "./common/nearAiClient";
 
 dotenv.config();
 
@@ -59,22 +55,9 @@ async function resolveDispute(
       "nescrow_dispute.near/dispute-resolver/0.0.1"
     );
 
-    const lastBotMessage = await getLastThreadMessageFromBot(threadId);
-
-    if (lastBotMessage) {
-      const extractedData = extractDisputeResolution(lastBotMessage);
-
-      if (extractedData) {
-        return {
-          statusCode: 200,
-          body: JSON.stringify({ ...extractedData, threadId }),
-        };
-      }
-    }
-
     return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error computing dispute resolution" }),
+      statusCode: 200,
+      body: JSON.stringify({ threadId }),
     };
   } catch (error) {
     console.log("Error computing dispute resolution ", error);

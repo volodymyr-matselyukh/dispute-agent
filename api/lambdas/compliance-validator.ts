@@ -54,6 +54,8 @@ async function validateTask(taskName: string, taskDescription: string) {
       }
     }
 
+    console.log('lastBotMessage', lastBotMessage);
+
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Error validating data" }),
