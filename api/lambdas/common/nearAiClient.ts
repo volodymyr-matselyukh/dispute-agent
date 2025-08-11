@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const getLastThreadMessageFromBot = async (threadId: string) => {
   const messagesResponse = await axios.get(
-    `https://api.near.ai/v1/threads/${threadId}/messages`,
+    `https://api.near.ai/v1/threads/${threadId}/messages?limit=100`,
     {
       headers: {
         Authorization: `Bearer ${process.env.authorizationToken}`,
@@ -15,13 +15,19 @@ export const getLastThreadMessageFromBot = async (threadId: string) => {
       role: string;
       created_at: number;
       content: [{ text: { value: string } }];
-      attachments: [];
+      metadata: {
+        message_type: string;
+      };
     }
   ] = messagesResponse?.data?.data ?? [];
 
   const assistantMessages = messages.filter(
-    (message: { role: string; attachments: [] }) =>
-      message.role === "assistant" && message.attachments == null
+    (message: {
+      role: string;
+      metadata: {
+        message_type: string;
+      };
+    }) => message.role === "assistant" && message.metadata == null
   );
 
   assistantMessages.sort(
@@ -38,7 +44,7 @@ export const getLastThreadMessageFromBot = async (threadId: string) => {
 
 export const listMessages = async (threadId: string) => {
   const messagesResponse = await axios.get(
-    `https://api.near.ai/v1/threads/${threadId}/messages`,
+    `https://api.near.ai/v1/threads/${threadId}/messages?limit=100`,
     {
       headers: {
         Authorization: `Bearer ${process.env.authorizationToken}`,
@@ -51,15 +57,29 @@ export const listMessages = async (threadId: string) => {
       role: string;
       created_at: number;
       content: [{ text: { value: string } }];
+      metadata: {
+        message_type: string;
+      };
     }
   ] = messagesResponse?.data?.data ?? [];
 
-  messages.sort(
+  const filteredMessages = messages.filter(
+    (message: {
+      role: string;
+      created_at: number;
+      content: [{ text: { value: string } }];
+      metadata: {
+        message_type: string;
+      };
+    }) => message.role === "assistant" && message.metadata == null
+  );
+
+  filteredMessages.sort(
     (message1: { created_at: number }, message2: { created_at: number }) =>
       message2.created_at - message1.created_at
   );
 
-  return messages.map((message) => ({
+  return filteredMessages.map((message) => ({
     text: message.content[0].text.value,
     role: message.role,
     createdAt: message.created_at,
