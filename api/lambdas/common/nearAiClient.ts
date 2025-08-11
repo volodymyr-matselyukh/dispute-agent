@@ -71,7 +71,7 @@ export const listMessages = async (threadId: string) => {
       metadata: {
         message_type: string;
       };
-    }) => message.role === "assistant" && message.metadata == null
+    }) => message.metadata == null
   );
 
   filteredMessages.sort(
